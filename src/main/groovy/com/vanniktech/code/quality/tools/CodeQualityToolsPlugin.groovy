@@ -20,12 +20,19 @@ class CodeQualityToolsPlugin implements Plugin<Project> {
     rootProject.codeQualityTools.extensions.create('errorProne', CodeQualityToolsPluginExtension.ErrorProne)
 
     def extension = rootProject.codeQualityTools
+    def hasSubProjects = rootProject.subprojects.size() > 0
 
-    rootProject.subprojects { subProject ->
-      addGradlePlugins(subProject, extension)
+    if (hasSubProjects) {
+      rootProject.subprojects { subProject ->
+        addGradlePlugins(subProject, extension)
 
-      afterEvaluate {
-        addCodeQualityTools(subProject, rootProject, extension)
+        afterEvaluate {
+          addCodeQualityTools(subProject, rootProject, extension, true)
+        }
+      }
+    } else {
+      rootProject.afterEvaluate {
+        addCodeQualityTools(rootProject, rootProject, extension, false)
       }
     }
   }
@@ -35,15 +42,15 @@ class CodeQualityToolsPlugin implements Plugin<Project> {
     addCpdGradlePlugin(project, extension)
   }
 
-  private static void addCodeQualityTools(final Project project, final Project rootProject, final CodeQualityToolsPluginExtension extension) {
+  private static void addCodeQualityTools(final Project project, final Project rootProject, final CodeQualityToolsPluginExtension extension, final boolean includeToolsThatRequireGradlePlugin) {
     if (!shouldIgnore(project, extension)) {
       // Reason for checking again in each add method: Unit Tests (they can't handle afterEvaluate properly)
       addPmd(project, rootProject, extension)
       addCheckstyle(project, rootProject, extension)
       addKtlint(project, extension)
-      addCpd(project, extension)
+      if (includeToolsThatRequireGradlePlugin) addCpd(project, extension)
       addDetekt(project, rootProject, extension)
-      addErrorProne(project, extension)
+      if (includeToolsThatRequireGradlePlugin) addErrorProne(project, extension)
 
       // Those static code tools take the longest hence we'll add them at the end.
       addLint(project, extension)
