@@ -28,6 +28,7 @@ dependencies {
     compile 'com.android.tools.build:gradle:3.0.1'
 
     testCompile 'junit:junit:4.12'
+    testCompile 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_7
